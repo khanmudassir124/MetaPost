@@ -26,7 +26,7 @@ const ListCard: React.FC<ListCardProp> = ({ data }) => {
         >
           Title :
         </Text>
-        <Text style={{ fontWeight: "bold", width: "80%" }}>{data?.title}</Text>
+        <Text style={{ fontWeight: "bold", width: "80%" }} testID="title">{data?.title}</Text>
       </View>
       <View style={{ display: "flex", width: "100%", flexDirection: "row" }}>
         <Text
@@ -36,7 +36,7 @@ const ListCard: React.FC<ListCardProp> = ({ data }) => {
         >
           Author :
         </Text>
-        <Text style={{ fontWeight: "bold", width: "80%" }}>{data?.author}</Text>
+        <Text style={{ fontWeight: "bold", width: "80%" }} testID="author">{data?.author}</Text>
       </View>
       <View style={{ display: "flex", width: "100%", flexDirection: "row" }}>
         <Text
@@ -46,7 +46,7 @@ const ListCard: React.FC<ListCardProp> = ({ data }) => {
         >
           Url :
         </Text>
-        <Text style={{ fontWeight: "bold", width: "80%" }}>{data?.url}</Text>
+        <Text style={{ fontWeight: "bold", width: "80%" }} testID="url">{data?.url}</Text>
       </View>
       <View style={{ display: "flex", width: "100%", flexDirection: "row" }}>
         <Text
@@ -56,7 +56,7 @@ const ListCard: React.FC<ListCardProp> = ({ data }) => {
         >
           Tags :
         </Text>
-        <Text style={{ fontWeight: "bold", width: "80%" }}>{data?._tags}</Text>
+        <Text style={{ fontWeight: "bold", width: "80%" }} testID="tags">{data?._tags}</Text>
       </View>
       <View style={{ display: "flex", width: "100%", flexDirection: "row" }}>
         <Text
@@ -66,7 +66,7 @@ const ListCard: React.FC<ListCardProp> = ({ data }) => {
         >
           Created :
         </Text>
-        <Text style={{ fontWeight: "bold", width: "80%" }}>
+        <Text style={{ fontWeight: "bold", width: "80%" }} testID="created_at">
           {data?.created_at}
         </Text>
       </View>

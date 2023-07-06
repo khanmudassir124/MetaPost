@@ -61,6 +61,7 @@ const Home: React.FC<HomeProps> = ({navigation}) => {
           padding: 10,
         }}>
         <TextInput
+          testID="searchTextInput"
           style={{
             padding: 5,
             paddingHorizontal: 10,
@@ -68,6 +69,7 @@ const Home: React.FC<HomeProps> = ({navigation}) => {
             borderWidth: 1,
             borderRadius: 5,
           }}
+          value={searchText}
           onChangeText={t => {
             setSearchText(t);
           }}
@@ -75,6 +77,7 @@ const Home: React.FC<HomeProps> = ({navigation}) => {
         />
       </View>
       <FlatList
+        testID="flatList"
         contentContainerStyle={{
           width: Dimensions.get('window').width,
           padding: 5,
