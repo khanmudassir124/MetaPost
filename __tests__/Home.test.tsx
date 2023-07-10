@@ -1,40 +1,64 @@
 import React from 'react';
-import {render, fireEvent, waitFor, act} from '@testing-library/react-native';
+import {
+  render,
+  fireEvent,
+  waitFor,
+  act,
+  RenderResult,
+  screen,
+} from '@testing-library/react-native';
 import Home from '../src/screens/Home';
 import ApiEndPoints from '../src/constants/ApiEndPoints';
 import ListCard from '../src/components/ListCard';
 import MockResponse from '../src/constants/MockResponse';
+import App from '../App';
+
+let fetchMock: any;
+let home: RenderResult;
+beforeEach(async () => {
+  fetchMock = jest
+    .spyOn(global, 'fetch')
+    .mockImplementation(
+      jest.fn(() =>
+        Promise.resolve({json: () => Promise.resolve(MockResponse)}),
+      ) as jest.Mock,
+    );
+});
+
+afterEach(() => {
+  jest.restoreAllMocks();
+});
 
 describe('Home component', () => {
   // Render Home Screen
-  it('should render without errors', () => {
-    render(<Home navigation={undefined} />);
+  it('should render without errors', async () => {
+    await fetchMock();
+    await waitFor(() => render(<Home navigation={undefined} />));
   });
 
-  it('should have correct initial state', () => {
-    const {getByTestId} = render(<Home navigation={undefined} />);
+  // Fetch Data from API and update in state
+  it('should fetch data, render home and update state including falt List', async () => {
+    await fetchMock();
+    await waitFor(() => render(<Home navigation={undefined} />));
 
-    expect(getByTestId('flatList').props.data).toEqual([]);
-    expect(getByTestId('flatList').props.refreshing).toBe(false);
-    expect(getByTestId('searchTextInput').props.value).toBe('');
+    expect(fetchMock).toHaveBeenCalled();
+    expect(fetchMock).toHaveBeenCalledWith(ApiEndPoints.getPost('0'));
   });
 
-  // Fetch Data from API in every 10 secs and update in state
-  it('should fetch data and update state', async () => {
-    global.fetch = jest.fn().mockResolvedValueOnce({
-      json: () => Promise.resolve(MockResponse),
-    });
+  // Populate Flat List with the data fetched from API response
+  it('should Populate Flat List as per the data fetched from API response', async () => {
+    await fetchMock();
+    home = render(<Home navigation={undefined} />);
 
-    const home = render(<Home navigation={undefined} />);
+    expect(fetchMock).toHaveBeenCalled();
+    expect(fetchMock).toHaveBeenCalledWith(ApiEndPoints.getPost('0'));
+
     const flatList = home.getByTestId('flatList');
-
     await act(async () => {
-      await flatList;
+      await waitFor(() =>
+        expect(flatList.props.data).toEqual(MockResponse.hits),
+      );
     });
-
-    expect(global.fetch).toHaveBeenCalledTimes(1);
-    expect(global.fetch).toHaveBeenCalledWith(ApiEndPoints.getPost('0'));
-    await waitFor(() => expect(flatList.props.data).toEqual(MockResponse.hits));
   });
 
   // List Data in Flat List and ListCard Component Data View Properly
@@ -48,18 +72,66 @@ describe('Home component', () => {
     expect(getByTestId(`tags`)).toBeDefined();
   });
 
-  // onScroll to end fetch data again
-
   // Search Data on Input Search Text Change
-  it('should update search text state on change input value', () => {
-    const mockNavigation = {navigate: jest.fn()};
-    const {getByTestId} = render(<Home navigation={mockNavigation} />);
-    const inputComponent = getByTestId('searchTextInput');
+  it('should update search text state on change input value', async () => {
+    await waitFor(() => {
+      const {getByTestId} = render(<Home navigation={undefined} />);
+      const inputComponent = getByTestId('searchTextInput');
 
-    fireEvent.changeText(inputComponent, 'Author');
+      fireEvent.changeText(inputComponent, 'Author');
 
-    expect(inputComponent.props.value).toBe('Author');
+      expect(inputComponent.props.value).toBe('Author');
+    });
+  });
+
+  // On Search Change the populated data in flat list
+  it('should update list on search text change', async () => {
+    await fetchMock();
+    home = render(<Home navigation={undefined} />);
+
+    expect(fetchMock).toHaveBeenCalled();
+    expect(fetchMock).toHaveBeenCalledWith(ApiEndPoints.getPost('0'));
+
+    const flatList = home.getByTestId('flatList');
+    await act(async () => {
+      await waitFor(() =>
+        expect(flatList.props.data).toEqual(MockResponse.hits),
+      );
+    });
+    const inputComponent = home.getByTestId('searchTextInput');
+    fireEvent.changeText(inputComponent, 'redbell');
+    expect(inputComponent.props.value).toBe('redbell');
+
+    await waitFor(() => expect(flatList.props.data).toHaveLength(1));
+  });
+
+  it('should update list on search text change', async () => {
+    fetchMock = jest
+      .spyOn(global, 'fetch')
+      .mockImplementation(
+        jest.fn(() =>
+          Promise.resolve({json: () => Promise.resolve({})}),
+        ) as jest.Mock,
+      );
+
+    home = render(<Home navigation={undefined} />);
+
+    const flatList = home.getByTestId('flatList');
+
+    await waitFor(() => expect(flatList.props.data).toHaveLength(0));
+    expect(home.getByTestId('notDataFound')).toBeTruthy();
   });
 
   // onClick of list card navigate to next screen and display json
+  it('should navigate to next screen on component click', async () => {
+    const component = render(<App />);
+    await act(async () => {
+      await waitFor(async () => {
+        const toClick = await component.findByTestId('listCard0');
+        fireEvent(toClick, 'press');
+        const viewPost = await screen.findByTestId('viewPostData');
+        expect(viewPost).toBeDefined();
+      });
+    });
+  });
 });

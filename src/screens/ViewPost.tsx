@@ -12,7 +12,7 @@ const ViewPost: React.FC<ViewPostProps> = ({ route, navigation }) => {
   const data = route?.params?.data;
   return (
     <View>
-      <Text>{JSON.stringify(data)}</Text>
+      <Text testID="viewPostData">{JSON.stringify(data)}</Text>
     </View>
   );
 };

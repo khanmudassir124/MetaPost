@@ -101,6 +101,7 @@ const Home: React.FC<HomeProps> = ({navigation}) => {
         }}
         renderItem={({item, index}) => (
           <TouchableOpacity
+            testID={'listCard' + index}
             style={{width: '100%', padding: 5}}
             onPress={() => {
               navigation.navigate(ScreenRoutes.viewpost, {data: item});
@@ -129,6 +130,7 @@ const Home: React.FC<HomeProps> = ({navigation}) => {
         ListEmptyComponent={
           !loading ? (
             <Text
+              testID="notDataFound"
               style={{
                 width: '100%',
                 textAlign: 'center',
