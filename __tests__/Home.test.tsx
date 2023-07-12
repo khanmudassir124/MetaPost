@@ -12,9 +12,14 @@ import ApiEndPoints from '../src/constants/ApiEndPoints';
 import ListCard from '../src/components/ListCard';
 import MockResponse from '../src/constants/MockResponse';
 import App from '../App';
+import ScreenRoutes from '../src/constants/ScreenRoutes';
 
 let fetchMock: any;
 let home: RenderResult;
+const mockedDispatch = jest.fn();
+
+const navigation = {navigate: jest.fn()};
+
 beforeEach(async () => {
   fetchMock = jest
     .spyOn(global, 'fetch')
@@ -33,13 +38,13 @@ describe('Home component', () => {
   // Render Home Screen
   it('should render without errors', async () => {
     await fetchMock();
-    await waitFor(() => render(<Home navigation={undefined} />));
+    await waitFor(() => render(<Home navigation={navigation} />));
   });
 
   // Fetch Data from API and update in state
   it('should fetch data, render home and update state including falt List', async () => {
     await fetchMock();
-    await waitFor(() => render(<Home navigation={undefined} />));
+    await waitFor(() => render(<Home navigation={navigation} />));
 
     expect(fetchMock).toHaveBeenCalled();
     expect(fetchMock).toHaveBeenCalledWith(ApiEndPoints.getPost('0'));
@@ -48,7 +53,7 @@ describe('Home component', () => {
   // Populate Flat List with the data fetched from API response
   it('should Populate Flat List as per the data fetched from API response', async () => {
     await fetchMock();
-    home = render(<Home navigation={undefined} />);
+    home = render(<Home navigation={navigation} />);
 
     expect(fetchMock).toHaveBeenCalled();
     expect(fetchMock).toHaveBeenCalledWith(ApiEndPoints.getPost('0'));
@@ -75,7 +80,7 @@ describe('Home component', () => {
   // Search Data on Input Search Text Change
   it('should update search text state on change input value', async () => {
     await waitFor(() => {
-      const {getByTestId} = render(<Home navigation={undefined} />);
+      const {getByTestId} = render(<Home navigation={navigation} />);
       const inputComponent = getByTestId('searchTextInput');
 
       fireEvent.changeText(inputComponent, 'Author');
@@ -87,7 +92,7 @@ describe('Home component', () => {
   // On Search Change the populated data in flat list
   it('should update list on search text change', async () => {
     await fetchMock();
-    home = render(<Home navigation={undefined} />);
+    home = render(<Home navigation={navigation} />);
 
     expect(fetchMock).toHaveBeenCalled();
     expect(fetchMock).toHaveBeenCalledWith(ApiEndPoints.getPost('0'));
@@ -114,7 +119,7 @@ describe('Home component', () => {
         ) as jest.Mock,
       );
 
-    home = render(<Home navigation={undefined} />);
+    home = render(<Home navigation={navigation} />);
 
     const flatList = home.getByTestId('flatList');
 
@@ -122,16 +127,27 @@ describe('Home component', () => {
     expect(home.getByTestId('notDataFound')).toBeTruthy();
   });
 
-  // onClick of list card navigate to next screen and display json
-  it('should navigate to next screen on component click', async () => {
-    const component = render(<App />);
-    await act(async () => {
-      await waitFor(async () => {
-        const toClick = await component.findByTestId('listCard0');
-        fireEvent(toClick, 'press');
-        const viewPost = await screen.findByTestId('viewPostData');
-        expect(viewPost).toBeDefined();
+  it('testing Navigate on Press', async () => {
+    await waitFor(async () => {
+      home = render(<Home navigation={navigation} />);
+      const toClick = await home.findByTestId('listCard0');
+      fireEvent.press(toClick);
+      expect(navigation.navigate).toHaveBeenCalledWith(ScreenRoutes.viewpost, {
+        data: MockResponse.hits[0],
       });
     });
   });
+
+  // onClick of list card navigate to next screen and display json
+  // it('should navigate to next screen on component click', async () => {
+  //   const component = render(<App />);
+  //   await act(async () => {
+  //     await waitFor(async () => {
+  //       const toClick = await component.findByTestId('listCard0');
+  //       fireEvent(toClick, 'press');
+  //       const viewPost = await screen.findByTestId('viewPostData');
+  //       expect(viewPost).toBeDefined();
+  //     });
+  //   });
+  // });
 });
