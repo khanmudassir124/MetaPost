@@ -5,7 +5,6 @@ import { Hit } from "../types/MetaPostType";
 interface ViewPostProps {
   navigation: any;
   route: any;
-  data?: Hit;
 }
 
 const ViewPost: React.FC<ViewPostProps> = ({ route, navigation }) => {
