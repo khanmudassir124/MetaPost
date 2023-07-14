@@ -19,12 +19,12 @@ interface HomeProps {
   navigation: any;
 }
 const Home: React.FC<HomeProps> = ({navigation}) => {
-  const [data, setData] = useState<Hit[]>([]);
-  const [metaData, setMetaData] = useState<MetaPost>();
-  const [currentPage, setCurrentPage] = useState<number>(0);
-  const [refreshing, setRefreshing] = useState<boolean>(false);
-  const [loading, setIsLoading] = useState<boolean>(true);
-  const [searchText, setSearchText] = useState<string>('');
+  const [data, setData] = React.useState<Hit[]>([]);
+  const [metaData, setMetaData] = React.useState<MetaPost | any>();
+  const [currentPage, setCurrentPage] = React.useState<number>(0);
+  const [refreshing, setRefreshing] = React.useState<boolean>(false);
+  const [loading, setIsLoading] = React.useState<boolean>(true);
+  const [searchText, setSearchText] = React.useState<string>('');
 
   const handleFetchData = () => {
     setIsLoading(true);
@@ -33,10 +33,8 @@ const Home: React.FC<HomeProps> = ({navigation}) => {
       .then((response: MetaPost) => {
         setIsLoading(false);
         setRefreshing(false);
-        if (response) {
-          setMetaData(response);
-          setData([...data, ...(response.hits ?? [])]);
-        }
+        setMetaData(response);
+        setData([...data, ...(response.hits ?? [])]);
       });
   };
 
@@ -118,9 +116,7 @@ const Home: React.FC<HomeProps> = ({navigation}) => {
         maxToRenderPerBatch={10}
         onEndReachedThreshold={0.7}
         onEndReached={() => {
-          if (metaData?.nbPages ?? 0 > currentPage) {
-            setCurrentPage(currentPage + 1);
-          }
+          setCurrentPage(currentPage + 1);
         }}
         ListFooterComponent={
           loading ? <ActivityIndicator size="large" color="grey" /> : null

@@ -16,11 +16,16 @@ import ScreenRoutes from '../src/constants/ScreenRoutes';
 
 let fetchMock: any;
 let home: RenderResult;
-const mockedDispatch = jest.fn();
 
 const navigation = {navigate: jest.fn()};
-
+const setState = jest.fn();
+const useStateSpy = jest.spyOn(React, 'useState');
+useStateSpy.mockImplementation((initialState = undefined) => [
+  initialState,
+  setState,
+]);
 beforeEach(async () => {
+  jest.useFakeTimers();
   fetchMock = jest
     .spyOn(global, 'fetch')
     .mockImplementation(
@@ -38,7 +43,36 @@ describe('Home component', () => {
   // Render Home Screen
   it('should render without errors', async () => {
     await fetchMock();
-    await waitFor(() => render(<Home navigation={navigation} />));
+    await waitFor(async () => {
+      home = render(<Home navigation={navigation} />);
+      jest.advanceTimersByTime(10000);
+      expect(setState).toHaveBeenCalledWith(1);
+      const flatList = home.getByTestId('flatList');
+      expect(flatList).toBeDefined();
+      const {refreshControl} = flatList.props;
+      await act(async () => {
+        refreshControl.props.onRefresh();
+      });
+      expect(setState).toHaveBeenCalledWith(true);
+      expect(setState).toHaveBeenCalledWith([]);
+      expect(setState).toHaveBeenCalledWith(0);
+
+      fireEvent.scroll(flatList, {
+        nativeEvent: {
+          contentOffset: {
+            y: 100,
+          },
+          contentSize: {
+            height: 200,
+          },
+          layoutMeasurement: {
+            height: 200,
+          },
+        },
+      });
+      expect(setState).toHaveBeenCalledWith(1);
+      await waitFor(() => {});
+    });
   });
 
   // Fetch Data from API and update in state
@@ -60,9 +94,9 @@ describe('Home component', () => {
 
     const flatList = home.getByTestId('flatList');
     await act(async () => {
-      await waitFor(() =>
-        expect(flatList.props.data).toEqual(MockResponse.hits),
-      );
+      await waitFor(() => {
+        expect(flatList.props.data).toEqual(MockResponse.hits);
+      });
     });
   });
 
